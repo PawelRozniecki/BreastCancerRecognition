@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import copy
 from multiprocessing.spawn import freeze_support
 
