@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import torch
 import torchvision.models as models
 from PIL import Image
