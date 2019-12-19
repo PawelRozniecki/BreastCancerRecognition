@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import copy
 from multiprocessing.spawn import freeze_support
 
@@ -26,7 +24,7 @@ def main():
 
     dataset = ImageFolder(DATASET_PATH, transform=dataset_transform)
     # train, test = data.random_split(dataset, [10, 277514])
-    train, test = data.random_split(dataset, [92508, 185016])
+    train, test = data.random_split(dataset, [78313, 156628])
 
     train_set = data.DataLoader(train, batch_size=BATCH_SIZE, shuffle=True, num_workers=NO_WORKERS)
     # val_set = data.DataLoader(val, batch_size=BATCH_SIZE, shuffle=True, num_workers=NO_WORKERS)
@@ -84,7 +82,18 @@ def main():
                 best_model_wts = copy.deepcopy(model.state_dict())
                 print("best acc: ", best_acc)
 
-    torch.save(model.state_dict(), TRAINED_MODEL_PATH)
+        model.eval()
+        for da in test_set :
+            data_in, label = da
+            o = model(data_in)
+            for idx, i in enumerate(o) :
+                print(idx, "/", len(test_set))
+                if torch.argmax(i) == label[idx] :
+                    # print("correct: ", correct)
+                    correct += 1
+                total += 1
+                print("Error: ", error, "accuracy: ", round(correct / total, 3), "correct: ", correct, " total: ", total)
+    torch.save(model, TRAINED_MODEL_PATH)
 
 
 if __name__ == '__main__':
