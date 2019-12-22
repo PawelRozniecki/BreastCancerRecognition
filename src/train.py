@@ -87,6 +87,7 @@ def main() :
 
     torch.save(model.state_dict(), TRAINED_MODEL_PATH)
 
+#train
     model.eval()
 
     correct = 0
