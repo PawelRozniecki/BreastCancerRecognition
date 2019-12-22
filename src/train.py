@@ -82,19 +82,7 @@ def main():
                 best_model_wts = copy.deepcopy(model.state_dict())
                 print("best acc: ", best_acc)
 
-        model.eval()
-        for da in test_set :
-            data_in, label = da
-            o = model(data_in)
-            for idx, i in enumerate(o) :
-                print(idx, "/", len(test_set))
-                if torch.argmax(i) == label[idx] :
-                    # print("correct: ", correct)
-                    correct += 1
-                total += 1
-                print("Error: ", error, "accuracy: ", round(correct / total, 3), "correct: ", correct, " total: ", total)
-    torch.save(model, TRAINED_MODEL_PATH)
-
+     
 
 if __name__ == '__main__':
     freeze_support()
