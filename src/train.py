@@ -23,6 +23,7 @@ def main():
     ])
 
     dataset = ImageFolder(DATASET_PATH, transform=dataset_transform)
+    print(len(dataset))
     # train, test = data.random_split(dataset, [10, 277514])
     train, test = data.random_split(dataset, [78313, 156628])
 
@@ -82,7 +83,6 @@ def main():
                 best_model_wts = copy.deepcopy(model.state_dict())
                 print("best acc: ", best_acc)
 
-     
 
 if __name__ == '__main__':
     freeze_support()
