@@ -14,7 +14,7 @@ from src.constants import *
 from src.model import Model
 
 
-def main():
+def main() :
     dataset_transform = transforms.Compose([
         transforms.Resize(254),
         transforms.RandomResizedCrop(224),
@@ -24,8 +24,16 @@ def main():
     ])
 
     dataset = ImageFolder(DATASET_PATH, transform=dataset_transform)
+<<<<<<< HEAD
     # train, test = data.random_split(dataset, [10, 277514])
     train, test = data.random_split(dataset, [92508, 185016])
+=======
+    print(len(dataset))
+    test_len = int(len(dataset) / 3)
+    train_len = int(len(dataset) - test_len)
+
+    train, test = data.random_split(dataset, [train_len, test_len])
+>>>>>>> 646dcdd1fe9c8b37f940c040a1ad8bcb01ad2954
 
     train_set = data.DataLoader(train, batch_size=BATCH_SIZE, shuffle=True, num_workers=NO_WORKERS)
     # val_set = data.DataLoader(val, batch_size=BATCH_SIZE, shuffle=True, num_workers=NO_WORKERS)
@@ -35,7 +43,7 @@ def main():
     model = Model(alexnet, 2)
     model.to(DEVICE)
 
-    for p in model.features.parameters():
+    for p in model.features.parameters() :
         p.requires_grad = False
 
     loss_func = nn.CrossEntropyLoss()
@@ -48,10 +56,10 @@ def main():
     total = 0
     running_corrects = 0
     model.train()
-    for epoch in range(EPOCH):
+    for epoch in range(EPOCH) :
         error = 0.0
 
-        for i, batch in enumerate(train_set):
+        for i, batch in enumerate(train_set) :
             optimizer.zero_grad()
 
             running_loss = 0.0
@@ -78,11 +86,12 @@ def main():
             epoch_loss = running_loss / len(train)
             epoch_acc = running_corrects.double() / len(train)
 
-            if epoch_acc > best_acc:
+            if epoch_acc > best_acc :
                 best_acc = epoch_acc
                 best_model_wts = copy.deepcopy(model.state_dict())
                 print("best acc: ", best_acc)
 
+<<<<<<< HEAD
         model.eval()
         for da in test_set :
             data_in, label = da
@@ -98,6 +107,30 @@ def main():
 
 
 if __name__ == '__main__':
+=======
+    torch.save(model.state_dict(), TRAINED_MODEL_PATH)
+
+    model.eval()
+
+    correct = 0
+    total = 0
+
+    with torch.no_grad():
+        for i, d in enumerate(test_set):
+            print("iteration: ", i , "/" , len(test_set))
+            test_image, test_label = d
+            output = model(test_image)
+            _, predicted = torch.max(output.data, 1)
+            total += test_label.size(0)
+            correct += (predicted == test_label).sum().item()
+            print("correct: " , correct , " total: " , total)
+
+    print('Accuracy of the network on the 10000 test images: %d %%' % (
+            100 * correct / total))
+
+
+if __name__ == '__main__' :
+>>>>>>> 646dcdd1fe9c8b37f940c040a1ad8bcb01ad2954
     freeze_support()
     main()
     exit()
