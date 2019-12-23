@@ -1,3 +1,4 @@
+
 import copy
 from multiprocessing.spawn import freeze_support
 
@@ -63,6 +64,7 @@ def main() :
             running_loss = 0.0
             running_corrects = 0
 
+
             print(i + 1, "/", len(train_set))
             image_batch, label_batch = batch
             image_batch = image_batch.to(DEVICE)
@@ -87,8 +89,7 @@ def main() :
                 best_acc = epoch_acc
                 best_model_wts = copy.deepcopy(model.state_dict())
                 print("best acc: ", best_acc)
-        model.eval()
-        with torch.no_grad() :
+            model.eval()
             for i, d in enumerate(test_set) :
                 print("iteration: ", i, "/", len(test_set))
                 test_image, test_label = d
