@@ -89,18 +89,18 @@ def main() :
                 best_acc = epoch_acc
                 best_model_wts = copy.deepcopy(model.state_dict())
                 print("best acc: ", best_acc)
-    model.eval()
-    for i, d in enumerate(test_set) :
-        print("iteration: ", i, "/", len(test_set))
-        test_image, test_label = d
-        output = model(test_image)
-        _, predicted = torch.max(output.data, 1)
-        total += test_label.size(0)
-        correct += (predicted == test_label).sum().item()
-        print("correct: ", correct, " total: ", total)
 
-    print('Accuracy of the network on the 10000 test images: %d %%' % (
-            100 * correct / total))
+        for i, d in enumerate(test_set) :
+            print("iteration: ", i, "/", len(test_set))
+            test_image, test_label = d
+            output = model(test_image)
+            _, predicted = torch.max(output.data, 1)
+            total += test_label.size(0)
+            correct += (predicted == test_label).sum().item()
+            print("correct: ", correct, " total: ", total)
+
+        print('Accuracy of the network on the 10000 test images: %d %%' % (
+                100 * correct / total))
 
     torch.save(model.state_dict(), TRAINED_MODEL_PATH)
 
