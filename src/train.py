@@ -29,12 +29,11 @@ def main() :
     test_len = int(len(dataset) / 3)
     train_len = int(len(dataset) - test_len)
 
-
-    train, test = data.random_split(dataset, [train_len, test_len])
+    train, test = data.random_split(dataset, [train_len, test_len ])
 
     train_set = data.DataLoader(train, batch_size=BATCH_SIZE, shuffle=True, num_workers=NO_WORKERS)
     # val_set = data.DataLoader(val, batch_size=BATCH_SIZE, shuffle=True, num_workers=NO_WORKERS)
-    test_set = data.DataLoader(test, batch_size=512, shuffle=False, num_workers=NO_WORKERS)
+    test_set = data.DataLoader(test, batch_size=len(test), shuffle=False, num_workers=NO_WORKERS)
 
     alexnet = models.alexnet(pretrained=True)
     model = Model(alexnet, 2)
@@ -64,8 +63,8 @@ def main() :
             running_loss = 0.0
             running_corrects = 0
 
-
             print(i + 1, "/", len(train_set))
+
             image_batch, label_batch = batch
             image_batch = image_batch.to(DEVICE)
             label_batch = label_batch.to(DEVICE)
@@ -89,18 +88,21 @@ def main() :
                 best_acc = epoch_acc
                 best_model_wts = copy.deepcopy(model.state_dict())
                 print("best acc: ", best_acc)
+    model.eval()
+    for i, d in enumerate(test_set) :
+        print("iteration: ", i, "/", len(test_set))
+        test_image, test_label = d
+        test_image = test_image.to(DEVICE)
+        test_label = test_label.to(DEVICE)
 
-        for i, d in enumerate(test_set) :
-            print("iteration: ", i, "/", len(test_set))
-            test_image, test_label = d
-            output = model(test_image)
-            _, predicted = torch.max(output.data, 1)
-            total += test_label.size(0)
-            correct += (predicted == test_label).sum().item()
-            print("correct: ", correct, " total: ", total)
+        output = model(test_image)
+        _, predicted = torch.max(output.data, 1)
+        total += test_label.size(0)
+        correct += (predicted == test_label).sum().item()
+        print("correct: ", correct, " total: ", total)
 
-        print('Accuracy of the network on the 10000 test images: %d %%' % (
-                100 * correct / total))
+    print('Accuracy of the network on the 10000 test images: %d %%' % (
+            100 * correct / total))
 
     torch.save(model.state_dict(), TRAINED_MODEL_PATH)
 
