@@ -91,24 +91,24 @@ def main() :
                 best_model_wts = copy.deepcopy(model.state_dict())
                 print("best acc: ", best_acc)
 
-            model.eval()
-            for i, d in enumerate(test_set) :
-                print("iteration: ", i, "/", len(test_set))
-                test_image, test_label = d
-                test_image = test_image.to(DEVICE)
-                test_label = test_label.to(DEVICE)
+        model.eval()
+        for i, d in enumerate(test_set) :
+            print("iteration: ", i, "/", len(test_set))
+            test_image, test_label = d
+            test_image = test_image.to(DEVICE)
+            test_label = test_label.to(DEVICE)
 
-                output = model(test_image)
-                loss = loss_func(output, test_label)
+            output = model(test_image)
+            loss = loss_func(output, test_label)
 
-                val_loss += loss.item() * test_image.size(0)
-                _, predicted = torch.max(output.data, 1)
-                total += test_label.size(0)
-                correct += (predicted == test_label).sum().item()
-                print("correct: ", correct, " total: ", total)
+            val_loss += loss.item() * test_image.size(0)
+            _, predicted = torch.max(output.data, 1)
+            total += test_label.size(0)
+            correct += (predicted == test_label).sum().item()
+            print("correct: ", correct, " total: ", total)
 
-            print('Accuracy of the network on the 10000 test images: %d %%' % (
-                    100 * correct / total))
+        print('Accuracy of the network on the 10000 test images: %d %%' % (
+                100 * correct / total))
 
     torch.save(model.state_dict(), TRAINED_MODEL_PATH)
 
