@@ -54,6 +54,8 @@ def main() :
     model.train()
     for epoch in range(EPOCH) :
         error = 0.0
+        correct = 0
+        total = 0
 
         for i, batch in enumerate(train_set) :
             optimizer.zero_grad()
@@ -63,13 +65,11 @@ def main() :
 
             print(i + 1, "/", len(train_set))
             image_batch, label_batch = batch
-            image_batch
             image_batch = image_batch.to(DEVICE)
             label_batch = label_batch.to(DEVICE)
 
             predicted_labels = model(image_batch)
             predicted_labels = predicted_labels.to(DEVICE)
-
             _, predictions = torch.max(predicted_labels, 1)
             loss = loss_func(predicted_labels, label_batch)
             error = error + loss.item()
@@ -87,26 +87,23 @@ def main() :
                 best_acc = epoch_acc
                 best_model_wts = copy.deepcopy(model.state_dict())
                 print("best acc: ", best_acc)
+        model.eval()
+        with torch.no_grad() :
+            for i, d in enumerate(test_set) :
+                print("iteration: ", i, "/", len(test_set))
+                test_image, test_label = d
+                output = model(test_image)
+                _, predicted = torch.max(output.data, 1)
+                total += test_label.size(0)
+                correct += (predicted == test_label).sum().item()
+                print("correct: ", correct, " total: ", total)
+
+        print('Accuracy of the network on the 10000 test images: %d %%' % (
+                100 * correct / total))
 
     torch.save(model.state_dict(), TRAINED_MODEL_PATH)
 
-#train
-    model.eval()
-    correct = 0
-    total = 0
 
-    with torch.no_grad():
-        for i, d in enumerate(test_set):
-            print("iteration: ", i , "/" , len(test_set))
-            test_image, test_label = d
-            output = model(test_image)
-            _, predicted = torch.max(output.data, 1)
-            total += test_label.size(0)
-            correct += (predicted == test_label).sum().item()
-            print("correct: " , correct , " total: " , total)
-
-    print('Accuracy of the network on the 10000 test images: %d %%' % (
-            100 * correct / total))
 
 
 if __name__ == '__main__' :
