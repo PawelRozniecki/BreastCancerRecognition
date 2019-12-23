@@ -48,16 +48,17 @@ def main() :
     best_model_wts = copy.deepcopy(alexnet.state_dict())
     best_acc = 0.0
 
-    correct = 0
-    total = 0
-    running_corrects = 0
-    model.train()
     for epoch in range(EPOCH) :
+        model.train()
+
         error = 0.0
         correct = 0
         total = 0
+        val_loss = 0.0
 
         for i, batch in enumerate(train_set) :
+
+
             optimizer.zero_grad()
 
             running_loss = 0.0
@@ -72,6 +73,7 @@ def main() :
             predicted_labels = model(image_batch)
             predicted_labels = predicted_labels.to(DEVICE)
             _, predictions = torch.max(predicted_labels, 1)
+
             loss = loss_func(predicted_labels, label_batch)
             error = error + loss.item()
             print("loss: ", loss)
@@ -89,26 +91,31 @@ def main() :
                 best_model_wts = copy.deepcopy(model.state_dict())
                 print("best acc: ", best_acc)
 
-    for i, d in enumerate(test_set) :
-        print("iteration: ", i, "/", len(test_set))
-        test_image, test_label = d
-        test_image = test_image.to(DEVICE)
-        test_label = test_label.to(DEVICE)
+        with torch.no_grad:
+            model.eval()
+            for i, d in enumerate(test_set) :
+                print("iteration: ", i, "/", len(test_set))
+                test_image, test_label = d
+                test_image = test_image.to(DEVICE)
+                test_label = test_label.to(DEVICE)
 
-        output = model(test_image)
-        _, predicted = torch.max(output.data, 1)
-        total += test_label.size(0)
-        correct += (predicted == test_label).sum().item()
-        print("correct: ", correct, " total: ", total)
+                output = model(test_image)
+                loss = loss_func(output, test_label)
 
-    print('Accuracy of the network on the 10000 test images: %d %%' % (
-            100 * correct / total))
+                val_loss += loss.item() * test_image.size(0)
+                _, predicted = torch.max(output.data, 1)
+                total += test_label.size(0)
+                correct += (predicted == test_label).sum().item()
+                print("correct: ", correct, " total: ", total)
+
+            print('Accuracy of the network on the 10000 test images: %d %%' % (
+                    100 * correct / total))
 
     torch.save(model.state_dict(), TRAINED_MODEL_PATH)
 
-
-
-
+    avg_train_loss = loss/len(train_set)
+    avg_test_loss = val_loss/len(test_set)
+    print("avg train: ", avg_train_loss, "avg test: ", avg_test_loss)
 if __name__ == '__main__' :
     freeze_support()
     main()
