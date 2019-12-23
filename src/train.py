@@ -91,7 +91,6 @@ def main() :
                 best_model_wts = copy.deepcopy(model.state_dict())
                 print("best acc: ", best_acc)
 
-        with torch.no_grad:
             model.eval()
             for i, d in enumerate(test_set) :
                 print("iteration: ", i, "/", len(test_set))
