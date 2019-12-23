@@ -18,8 +18,8 @@ def main() :
         transforms.Resize(254),
         transforms.RandomResizedCrop(224),
         transforms.RandomHorizontalFlip(),
+        transforms.RandomRotation(0,270),
         transforms.ToTensor(),
-        transforms.RandomRotation(0, 270),
         transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
     ])
 
