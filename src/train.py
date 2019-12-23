@@ -88,7 +88,7 @@ def main() :
                 best_acc = epoch_acc
                 best_model_wts = copy.deepcopy(model.state_dict())
                 print("best acc: ", best_acc)
-    model.eval()
+
     for i, d in enumerate(test_set) :
         print("iteration: ", i, "/", len(test_set))
         test_image, test_label = d
