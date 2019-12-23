@@ -33,7 +33,7 @@ def main() :
 
     train_set = data.DataLoader(train, batch_size=BATCH_SIZE, shuffle=True, num_workers=NO_WORKERS)
     # val_set = data.DataLoader(val, batch_size=BATCH_SIZE, shuffle=True, num_workers=NO_WORKERS)
-    test_set = data.DataLoader(test, batch_size=len(test), shuffle=False, num_workers=NO_WORKERS)
+    test_set = data.DataLoader(test, batch_size= 64, shuffle=False, num_workers=NO_WORKERS)
 
     alexnet = models.alexnet(pretrained=True)
     model = Model(alexnet, 2)
