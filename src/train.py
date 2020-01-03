@@ -86,10 +86,10 @@ def main() :
 
             if(epoch_loss < lowest_loss):
                 lowest_loss = epoch_loss
+                print("NEW LOWEST LOSS: ", lowest_loss)
 
             epoch_acc = running_corrects.double() / len(train)
 
-            print("LOWEST LOSS: " , lowest_loss)
             if epoch_acc > best_acc :
                 best_acc = epoch_acc
                 best_model_wts = copy.deepcopy(model.state_dict())
