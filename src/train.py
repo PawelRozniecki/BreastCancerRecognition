@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import copy
 from multiprocessing.spawn import freeze_support
-
+from src.callbacks import *
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -84,9 +84,10 @@ def main() :
             running_corrects += torch.sum(predictions.to(DEVICE) == label_batch)
             epoch_loss = running_loss / len(train)
 
-            if(epoch_loss < lowest_loss):
-                lowest_loss = epoch_loss
-                print("NEW LOWEST LOSS: ", lowest_loss)
+
+            # STOPPING CONDITION
+            callbacks = [EarlyStopping(monitor='epoch_loss', patience=5)]
+            model.set_callbacks(callbacks)
 
             epoch_acc = running_corrects.double() / len(train)
 
