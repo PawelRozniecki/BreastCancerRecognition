@@ -43,7 +43,7 @@ def main() :
         p.requires_grad = False
 
     loss_func = nn.CrossEntropyLoss()
-    optimizer = optim.adam(model.parameters(), lr=0.0001)
+    optimizer = optim.Adam(model.parameters(), lr=0.0001)
 
     best_model_wts = copy.deepcopy(alexnet.state_dict())
     best_acc = 0.0
@@ -80,17 +80,15 @@ def main() :
             running_loss += loss.item() * image_batch.size(0)
             print(running_loss)
             error = error / len(train)
-            print("Error")
             running_corrects += torch.sum(predictions.to(DEVICE) == label_batch)
             epoch_loss = running_loss / len(train)
             epoch_acc = running_corrects.double() / len(train)
+            print(epoch_loss)
 
             if epoch_acc > best_acc :
                 best_acc = epoch_acc
                 best_model_wts = copy.deepcopy(model.state_dict())
                 print("best acc: ", best_acc)
-
-        # testing stage
 
         model.eval()
         for i, d in enumerate(test_set) :
