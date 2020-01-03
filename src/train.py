@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import copy
 from multiprocessing.spawn import freeze_support
-from src.callbacks import *
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -75,6 +74,7 @@ def main() :
 
             loss = loss_func(predicted_labels, label_batch)
             error = error + loss.item()
+            print(error)
             # print("loss: ", loss)
             loss.backward()
             optimizer.step()
@@ -86,8 +86,8 @@ def main() :
 
 
             # STOPPING CONDITION
-            callbacks = [EarlyStopping(monitor='epoch_loss', patience=5)]
-            model.set_callbacks(callbacks)
+            # callbacks = [EarlyStopping(monitor='epoch_loss', patience=5)]
+            # model.set_callbacks(callbacks)
 
             epoch_acc = running_corrects.double() / len(train)
 
