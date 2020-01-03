@@ -47,6 +47,7 @@ def main() :
 
     best_model_wts = copy.deepcopy(alexnet.state_dict())
     best_acc = 0.0
+    lowest_loss = 1000
 
     for epoch in range(EPOCH) :
         model.train()
@@ -74,17 +75,21 @@ def main() :
 
             loss = loss_func(predicted_labels, label_batch)
             error = error + loss.item()
-            print("loss: ", loss)
+            # print("loss: ", loss)
             loss.backward()
             optimizer.step()
             running_loss += loss.item() * image_batch.size(0)
-            print(running_loss)
+            # print(running_loss)
             error = error / len(train)
             running_corrects += torch.sum(predictions.to(DEVICE) == label_batch)
             epoch_loss = running_loss / len(train)
-            epoch_acc = running_corrects.double() / len(train)
-            print("epoch loss",  epoch_loss)
 
+            if(epoch_loss < lowest_loss):
+                lowest_loss = epoch_loss
+
+            epoch_acc = running_corrects.double() / len(train)
+
+            print("LOWEST LOSS: " , lowest_loss)
             if epoch_acc > best_acc :
                 best_acc = epoch_acc
                 best_model_wts = copy.deepcopy(model.state_dict())
