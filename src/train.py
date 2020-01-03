@@ -1,4 +1,4 @@
-
+#!/usr/bin/env python3
 import copy
 from multiprocessing.spawn import freeze_support
 
@@ -58,12 +58,10 @@ def main() :
 
         for i, batch in enumerate(train_set) :
 
-
             optimizer.zero_grad()
 
             running_loss = 0.0
             running_corrects = 0
-
             print(i + 1, "/", len(train_set))
 
             image_batch, label_batch = batch
@@ -85,7 +83,8 @@ def main() :
             running_corrects += torch.sum(predictions.to(DEVICE) == label_batch)
             epoch_loss = running_loss / len(train)
             epoch_acc = running_corrects.double() / len(train)
-
+            print(epoch_loss)
+ 
             if epoch_acc > best_acc :
                 best_acc = epoch_acc
                 best_model_wts = copy.deepcopy(model.state_dict())
@@ -100,7 +99,7 @@ def main() :
 
             output = model(test_image)
             loss = loss_func(output, test_label)
-
+            
             val_loss += loss.item() * test_image.size(0)
             _, predicted = torch.max(output.data, 1)
             total += test_label.size(0)
