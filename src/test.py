@@ -6,15 +6,15 @@ from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageFont
 from torchvision.transforms import transforms
-
 from src.constants import *
 from src.model import Model
 
-
 def main():
+
     alexnet = models.alexnet(pretrained=True)
-    model = Model(alexnet, 2)
-    model.to(DEVICE)
+    model = Model(alexnet,2)
+    model.load_state_dict(torch.load(TRAINED_MODEL_PATH,map_location="cpu"))
+    model.eval()
 
     transform = transforms.Compose([
         transforms.Resize(254),
@@ -23,13 +23,15 @@ def main():
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])])
 
-    input_image = Image.open('..' + os.path.sep + 'dataset' + os.path.sep + '0' + os.path.sep + '8863_idx5_x201_y1251_class0.png')
+    input_image = Image.open("/Users/pingwin/Documents/GitHub/BreastCancer/BreastCancerRecognition/m.jpg")
+    # input_image = Image.open('..' + os.path.sep + 'dataset' + os.path.sep + '1' + os.path.sep + '/8959_idx5_x1301_y1251_class1.png')
     image_transform = transform(input_image)
 
+    
     batch = torch.unsqueeze(image_transform, 0).to(DEVICE)
-
     out = model(batch)
 
+    print(out)
     with open(LABELS_PATH) as f:
         classes = [line.strip() for line in f.readlines()]
 
@@ -40,7 +42,6 @@ def main():
 
     _, indices = torch.sort(out, descending=True)
     [(classes[idx], percentage[idx].item()) for idx in indices[0][:]]
-
     y = classes[index[0]], percentage[index[0]].item()
 
     draw = ImageDraw.Draw(input_image)
