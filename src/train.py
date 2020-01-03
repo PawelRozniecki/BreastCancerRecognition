@@ -83,7 +83,7 @@ def main() :
             running_corrects += torch.sum(predictions.to(DEVICE) == label_batch)
             epoch_loss = running_loss / len(train)
             epoch_acc = running_corrects.double() / len(train)
-            print(epoch_loss)
+            print("epoch loss",  epoch_loss)
 
             if epoch_acc > best_acc :
                 best_acc = epoch_acc
