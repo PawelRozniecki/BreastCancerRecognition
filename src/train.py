@@ -8,8 +8,8 @@ import torchvision.models as models
 from torch.utils import data
 from torchvision.datasets import ImageFolder
 from torchvision.transforms import transforms
-
 from src.constants import *
+import numpy as np
 from src.model import Model
 
 
@@ -74,7 +74,6 @@ def main() :
 
             loss = loss_func(predicted_labels, label_batch)
             error = error + loss.item()
-            print(error)
             # print("loss: ", loss)
             loss.backward()
             optimizer.step()
@@ -82,7 +81,7 @@ def main() :
             # print(running_loss)
             error = error / len(train)
             running_corrects += torch.sum(predictions.to(DEVICE) == label_batch)
-            epoch_loss = running_loss / len(train)
+            epoch_loss = np.round(running_loss, 3) / len(train)
 
 
             # STOPPING CONDITION
