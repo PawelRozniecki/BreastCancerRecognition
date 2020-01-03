@@ -13,8 +13,7 @@ import shutil
 import datetime
 import numpy as np
 
-from tqdm import tqdm
-
+import tqdm
 import torch as th
 
 
