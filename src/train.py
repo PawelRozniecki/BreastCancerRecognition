@@ -46,8 +46,11 @@ def main() :
 
     best_model_wts = copy.deepcopy(alexnet.state_dict())
     best_acc = 0.0
-    lowest_loss = 1000
+    epoch_no_improve = 0
 
+    min_val_loss = np.Inf
+
+#main loop
     for epoch in range(EPOCH) :
         model.train()
 
@@ -105,7 +108,7 @@ def main() :
             output = model(test_image)
             loss = loss_func(output, test_label)
             
-            val_loss += loss.item() * test_image.size(0)
+            val_loss += loss
             _, predicted = torch.max(output.data, 1)
             total += test_label.size(0)
             correct += (predicted == test_label).sum().item()
@@ -114,10 +117,28 @@ def main() :
         print('Accuracy of the network on the 10000 test images: %d %%' % (
                 100 * correct / total))
 
-    torch.save(model.state_dict(), TRAINED_MODEL_PATH)
+    # torch.save(model.state_dict(), TRAINED_MODEL_PATH)
 
     avg_train_loss = loss/len(train_set)
     avg_test_loss = val_loss/len(test_set)
+
+    if avg_test_loss < min_val_loss:
+        torch.save(model.state_dict(), TRAINED_MODEL_PATH)
+        epoch_no_improve = 0
+        min_val_loss = avg_test_loss
+
+    else:
+        epoch_no_improve += 1
+        if epoch_no_improve == EPOCH:
+            print('Early stopping')
+
+
+
+    model = torch.load(TRAINED_MODEL_PATH)
+
+
+
+
     print("avg train: ", avg_train_loss, "avg test: ", avg_test_loss)
 if __name__ == '__main__' :
     freeze_support()
