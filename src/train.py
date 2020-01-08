@@ -42,7 +42,7 @@ def main() :
         p.requires_grad = False
 
     loss_func = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.0001)
+    optimizer = optim.SGD(model.parameters(), lr=0.0001)
 
     best_model_wts = copy.deepcopy(alexnet.state_dict())
     best_acc = 0.0
@@ -131,10 +131,6 @@ def main() :
         epoch_no_improve += 1
         if epoch_no_improve == EPOCH:
             print('Early stopping')
-
-
-
-    model = torch.load(TRAINED_MODEL_PATH)
 
 
 
