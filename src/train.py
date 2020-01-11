@@ -32,7 +32,7 @@ def main() :
 
     train_set = data.DataLoader(train, batch_size=BATCH_SIZE, shuffle=True, num_workers=NO_WORKERS)
     # val_set = data.DataLoader(val, batch_size=BATCH_SIZE, shuffle=True, num_workers=NO_WORKERS)
-    test_set = data.DataLoader(test, batch_size= 64, shuffle=False, num_workers=NO_WORKERS)
+    test_set = data.DataLoader(test, batch_size= 128, shuffle=False, num_workers=NO_WORKERS)
 
     alexnet = models.alexnet(pretrained=True)
     model = Model(alexnet, 2)
@@ -42,8 +42,8 @@ def main() :
         p.requires_grad = False
 
     loss_func = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.0001)
-    best_model_wts = copy.deepcopy(alexnet.state_dict())
+    optimizer = optim.Adam(model.parameters(), lr=0.1)
+    best_model_wts = copy.deepcopy(alexnet.state_dict())3
     best_acc = 0.0
     epoch_no_improve = 0
 
