@@ -15,11 +15,9 @@ class Model(nn.Module):
             nn.ReLU(inplace=True),
             nn.Linear(4096, 4096),
             nn.ReLU(inplace=True),
-            nn.Linear(4096, 4096),
-            nn.ReLU(),
-            nn.Dropout(),
             nn.Linear(4096, num_classes)
         )
+
 
 
         self.modelName = 'alexnet'
