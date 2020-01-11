@@ -13,6 +13,9 @@ import numpy as np
 from src.model import Model
 
 
+from ray import tune
+from ray.tune.examples.mnist_pytorch import get_data_loaders, train, test
+
 def main() :
     dataset_transform = transforms.Compose([
         transforms.Resize(254),
@@ -42,8 +45,10 @@ def main() :
         p.requires_grad = False
 
     loss_func = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.1)
-    best_model_wts = copy.deepcopy(alexnet.state_dict())3
+    optimizer = optim.Adam(model.parameters(), lr=0.00001)
+
+
+    best_model_wts = copy.deepcopy(alexnet.state_dict())
     best_acc = 0.0
     epoch_no_improve = 0
 
