@@ -45,8 +45,22 @@ def main() :
         p.requires_grad = False
 
     loss_func = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.00001)
+    optimizer = optim.Adam(model.parameters(), lr=0.001)
 
+    for i in range(30) :
+        train(model, optimizer, train_set, torch.device("cpu"))
+        acc = test(model, test_set, torch.device("cpu"))
+        tune.track.log(mean_accuracy=acc)
+
+
+    analysis = tune.run(
+        main(),
+        config={"lr" : tune.grid_search([0.001, 0.01, 0.1])})
+
+    print("Best config: ", analysis.get_best_config(metric="mean_accuracy"))
+
+# Get a dataframe for analyzing trial results.
+    df = analysis.dataframe()
 
     best_model_wts = copy.deepcopy(alexnet.state_dict())
     best_acc = 0.0
