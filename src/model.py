@@ -13,13 +13,20 @@ class Model(nn.Module):
             nn.Dropout(),
             nn.Linear(4096, 4096),
             nn.ReLU(inplace=True),
+            nn.Linear(4096, 4096),
+            nn.ReLU(inplace=True),
+            nn.Linear(4096, 4096),
+            nn.ReLU(),
+            nn.Dropout(),
             nn.Linear(4096, num_classes)
         )
+
 
         self.modelName = 'alexnet'
 
         # for p in self.features.parameters() :
         #     p.requires_grad = False
+
 
     def forward(self, x):
         x = self.features(x)

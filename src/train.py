@@ -42,8 +42,7 @@ def main() :
         p.requires_grad = False
 
     loss_func = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(model.parameters(), lr=0.0001)
-
+    optimizer = optim.Adam(model.parameters(), lr=0.0001)
     best_model_wts = copy.deepcopy(alexnet.state_dict())
     best_acc = 0.0
     epoch_no_improve = 0
