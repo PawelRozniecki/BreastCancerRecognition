@@ -99,8 +99,6 @@ def main() :
             total_train = predicted_labels.size(0)
             correct_train += (predictions == predicted_labels).sum().item()
 
-            print('Accuracy of training on the all the images test images: %d %%' % (
-                    100 * correct_train / total_train))
 
             # STOPPING CONDITION
             # callbacks = [EarlyStopping(monitor='epoch_loss', patience=5)]
@@ -113,6 +111,8 @@ def main() :
                 best_model_wts = copy.deepcopy(model.state_dict())
                 print("best acc: ", best_acc)
 
+        print('Accuracy of training on the all the images test images: %d %%' % (
+                    100 * correct_train / total_train))
         model.eval()
         for i, d in enumerate(test_set) :
             print("iteration: ", i, "/", len(test_set))
