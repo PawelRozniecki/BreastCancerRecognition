@@ -96,7 +96,9 @@ def main() :
             running_corrects += torch.sum(predictions.to(DEVICE) == label_batch)
             epoch_loss = np.round(running_loss, 3) / len(train)
 
-
+            total_train += label_batch.size(0)
+            correct_train += (predictions == label_batch).sum().item()
+            print("total_train: " , total_train , "total correct: ", correct_train)
             epoch_acc = running_corrects.double() / len(train)
 
             if epoch_acc > best_acc :
@@ -104,8 +106,8 @@ def main() :
                 best_model_wts = copy.deepcopy(model.state_dict())
                 print("best acc: ", best_acc)
 
-        print('Accuracy of training on the all the images test images: %d %%' % (
-                100 * running_corrects / len(train_set)))
+        print('Accuracy of training on the all the images : %d %%' % (
+                100 * correct_train / total_train))
 
 
         model.eval()
