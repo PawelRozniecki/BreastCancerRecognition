@@ -3,6 +3,7 @@ import copy
 from multiprocessing.spawn import freeze_support
 import torch
 import torch.nn as nn
+import requests
 import torch.optim as optim
 import torchvision.models as models
 from torch.utils import data
@@ -11,10 +12,8 @@ from torchvision.transforms import transforms
 from src.constants import *
 import numpy as np
 from src.model import Model
+from torch_lr_finder import LRFinder
 
-
-from ray import tune
-from ray.tune.examples.mnist_pytorch import get_data_loaders, train, test
 
 def main() :
     dataset_transform = transforms.Compose([
@@ -35,7 +34,7 @@ def main() :
 
     train_set = data.DataLoader(train, batch_size=BATCH_SIZE, shuffle=True, num_workers=NO_WORKERS)
     # val_set = data.DataLoader(val, batch_size=BATCH_SIZE, shuffle=True, num_workers=NO_WORKERS)
-    test_set = data.DataLoader(test, batch_size= 128, shuffle=False, num_workers=NO_WORKERS)
+    test_set = data.DataLoader(test, batch_size= 512, shuffle=False, num_workers=NO_WORKERS)
 
     alexnet = models.alexnet(pretrained=True)
     model = Model(alexnet, 2)
@@ -45,22 +44,13 @@ def main() :
         p.requires_grad = False
 
     loss_func = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.001)
+    optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
-    for i in range(30) :
-        train(model, optimizer, train_set, torch.device("cpu"))
-        acc = test(model, test_set, torch.device("cpu"))
-        tune.track.log(mean_accuracy=acc)
-
-
-    analysis = tune.run(
-        main(),
-        config={"lr" : tune.grid_search([0.001, 0.01, 0.1])})
-
-    print("Best config: ", analysis.get_best_config(metric="mean_accuracy"))
-
-# Get a dataframe for analyzing trial results.
-    df = analysis.dataframe()
+    # fining the best learning rate
+    # lr_finder = LRFinder(model, optimizer, loss_func, device=DEVICE)
+    # lr_finder.range_test(train_set, end_lr=100, num_iter=100)
+    # lr_finder.plot(log_lr=False)  # to inspect the loss-learning rate graph
+    # lr_finder.reset()
 
     best_model_wts = copy.deepcopy(alexnet.state_dict())
     best_acc = 0.0
@@ -74,6 +64,8 @@ def main() :
 
         error = 0.0
         correct = 0
+        correct_train = 0
+        total_train = 0
         total = 0
         val_loss = 0.0
 
@@ -104,6 +96,11 @@ def main() :
             running_corrects += torch.sum(predictions.to(DEVICE) == label_batch)
             epoch_loss = np.round(running_loss, 3) / len(train)
 
+            total_train = predicted_labels.size(0)
+            correct_train += (predictions == predicted_labels).sum().item()
+
+            print('Accuracy of training on the all the images test images: %d %%' % (
+                    100 * correct_train / total_train))
 
             # STOPPING CONDITION
             # callbacks = [EarlyStopping(monitor='epoch_loss', patience=5)]
@@ -132,7 +129,7 @@ def main() :
             correct += (predicted == test_label).sum().item()
             print("correct: ", correct, " total: ", total)
 
-        print('Accuracy of the network on the 10000 test images: %d %%' % (
+        print('Accuracy of the network on the all the images test images: %d %%' % (
                 100 * correct / total))
 
     # torch.save(model.state_dict(), TRAINED_MODEL_PATH)
