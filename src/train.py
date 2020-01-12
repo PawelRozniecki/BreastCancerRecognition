@@ -96,13 +96,6 @@ def main() :
             running_corrects += torch.sum(predictions.to(DEVICE) == label_batch)
             epoch_loss = np.round(running_loss, 3) / len(train)
 
-            total_train = predicted_labels.size(0)
-            correct_train += (predictions == predicted_labels).sum().item()
-
-
-            # STOPPING CONDITION
-            # callbacks = [EarlyStopping(monitor='epoch_loss', patience=5)]
-            # model.set_callbacks(callbacks)
 
             epoch_acc = running_corrects.double() / len(train)
 
@@ -112,7 +105,9 @@ def main() :
                 print("best acc: ", best_acc)
 
         print('Accuracy of training on the all the images test images: %d %%' % (
-                    100 * correct_train / total_train))
+                100 * running_corrects / len(train_set)))
+
+
         model.eval()
         for i, d in enumerate(test_set) :
             print("iteration: ", i, "/", len(test_set))
