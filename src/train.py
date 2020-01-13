@@ -12,10 +12,14 @@ from torchvision.transforms import transforms
 from src.constants import *
 import numpy as np
 from src.model import Model
-from torch_lr_finder import LRFinder
 
 
 def main() :
+
+    alexnet = models.alexnet(pretrained=True)
+    model = Model(alexnet, 2)
+    model.to(DEVICE)
+
     dataset_transform = transforms.Compose([
         transforms.Resize(254),
         transforms.RandomResizedCrop(224),
@@ -26,19 +30,13 @@ def main() :
     ])
 
     dataset = ImageFolder(DATASET_PATH, transform=dataset_transform)
-    print(len(dataset))
     test_len = int(len(dataset) / 3)
     train_len = int(len(dataset) - test_len)
 
     train, test = data.random_split(dataset, [train_len, test_len ])
-
     train_set = data.DataLoader(train, batch_size=BATCH_SIZE, shuffle=True, num_workers=NO_WORKERS)
-    # val_set = data.DataLoader(val, batch_size=BATCH_SIZE, shuffle=True, num_workers=NO_WORKERS)
     test_set = data.DataLoader(test, batch_size= 512, shuffle=False, num_workers=NO_WORKERS)
 
-    alexnet = models.alexnet(pretrained=True)
-    model = Model(alexnet, 2)
-    model.to(DEVICE)
 
     for p in model.features.parameters() :
         p.requires_grad = False
