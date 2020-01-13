@@ -4,3 +4,4 @@ __pycache__/
 *.iml
 dataset copy/
 dataset2.zip
+*.pth
