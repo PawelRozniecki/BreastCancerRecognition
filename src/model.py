@@ -27,13 +27,13 @@ class Model(nn.Module):
         )
 
         self.classifier = nn.Sequential(
-            nn.Dropout(),
+            nn.Dropout(p=0.6),
             nn.Linear(256 * 6 * 6, 4096),
             nn.ReLU(inplace=True),
-            nn.Dropout(),
+            nn.Dropout(p = 0.6),
             nn.Linear(4096, 4096),
             nn.ReLU(inplace=True),
-            nn.Dropout(),
+            nn.Dropout(p = 0.6 ),
             nn.Linear(4096, 4096),
             nn.ReLU(inplace=True),
             nn.Linear(4096, num_classes)
