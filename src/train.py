@@ -42,7 +42,7 @@ def main() :
         p.requires_grad = False
 
     loss_func = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+    optimizer = optim.Adam(model.parameters(), lr=0.0001)
 
     # fining the best learning rate
     # lr_finder = LRFinder(model, optimizer, loss_func, device=DEVICE)
@@ -89,7 +89,6 @@ def main() :
             loss.backward()
             optimizer.step()
             running_loss += loss.item() * image_batch.size(0)
-            # print(running_loss)
             error = error / len(train)
             running_corrects += torch.sum(predictions.to(DEVICE) == label_batch)
             epoch_loss = np.round(running_loss, 3) / len(train)
@@ -141,8 +140,6 @@ def main() :
         epoch_no_improve += 1
         if epoch_no_improve == EPOCH:
             print('Early stopping')
-
-
 
 
     print("avg train: ", avg_train_loss, "avg test: ", avg_test_loss)
