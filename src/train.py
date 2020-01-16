@@ -7,7 +7,6 @@ import requests
 import torch.optim as optim
 import torchvision.models as models
 from torch.utils import data
-from torch_lr_finder import LRFinder
 from torchvision.datasets import ImageFolder
 from torchvision.transforms import transforms
 from src.constants import *
@@ -43,10 +42,6 @@ def main() :
     loss_func = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=0.01)
 
-    lr_finder = LRFinder(model, optimizer, loss_func, device=DEVICE)
-    lr_finder.range_test(train_set, end_lr=100, num_iter=100)
-    lr_finder.plot(log_lr=False)  # to inspect the loss-learning rate graph
-    lr_finder.reset()
 
     best_model_wts = copy.deepcopy(alexnet.state_dict())
     best_acc = 0.0
