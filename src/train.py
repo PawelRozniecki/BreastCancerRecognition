@@ -7,6 +7,7 @@ import requests
 import torch.optim as optim
 import torchvision.models as models
 from torch.utils import data
+from torch_lr_finder import LRFinder
 from torchvision.datasets import ImageFolder
 from torchvision.transforms import transforms
 from src.constants import *
@@ -15,7 +16,6 @@ from src.model import Model
 
 
 def main() :
-
     alexnet = models.alexnet(pretrained=True)
     model = Model(alexnet, 2)
     model.to(DEVICE)
@@ -24,7 +24,7 @@ def main() :
         transforms.Resize(254),
         transforms.RandomResizedCrop(224),
         transforms.RandomHorizontalFlip(),
-        transforms.RandomRotation(0,270),
+        transforms.RandomRotation(0, 270),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
     ])
@@ -33,39 +33,38 @@ def main() :
     test_len = int(len(dataset) / 3)
     train_len = int(len(dataset) - test_len)
 
-    train, test = data.random_split(dataset, [train_len, test_len ])
+    train, test = data.random_split(dataset, [train_len, test_len])
     train_set = data.DataLoader(train, batch_size=BATCH_SIZE, shuffle=True, num_workers=NO_WORKERS)
-    test_set = data.DataLoader(test, batch_size= 512, shuffle=False, num_workers=NO_WORKERS)
-
+    test_set = data.DataLoader(test, batch_size=512, shuffle=False, num_workers=NO_WORKERS)
 
     for p in model.features.parameters() :
         p.requires_grad = False
 
     loss_func = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.0001)
+    optimizer = optim.Adam(model.parameters(), lr=0.01)
 
-    # fining the best learning rate
-    # lr_finder = LRFinder(model, optimizer, loss_func, device=DEVICE)
-    # lr_finder.range_test(train_set, end_lr=100, num_iter=100)
-    # lr_finder.plot(log_lr=False)  # to inspect the loss-learning rate graph
-    # lr_finder.reset()
+    lr_finder = LRFinder(model, optimizer, loss_func, device=DEVICE)
+    lr_finder.range_test(train_set, end_lr=100, num_iter=100)
+    lr_finder.plot(log_lr=False)  # to inspect the loss-learning rate graph
+    lr_finder.reset()
 
     best_model_wts = copy.deepcopy(alexnet.state_dict())
     best_acc = 0.0
     epoch_no_improve = 0
 
-    min_val_loss = np.Inf
-
-#main loop
     for epoch in range(EPOCH) :
         model.train()
 
-        error = 0.0
+        # counts number of epochs that are not improving
+        counter = 0
+        training_error = 0.0
         correct = 0
         correct_train = 0
         total_train = 0
-        total = 0
+        total_test = 0
         val_loss = 0.0
+        best_train_error = 0.0
+        max_wait_epoch = 10
 
         for i, batch in enumerate(train_set) :
 
@@ -84,28 +83,22 @@ def main() :
             _, predictions = torch.max(predicted_labels, 1)
 
             loss = loss_func(predicted_labels, label_batch)
-            error = error + loss.item()
-            # print("loss: ", loss)
+            training_error = training_error + loss.item()
+
             loss.backward()
             optimizer.step()
             running_loss += loss.item() * image_batch.size(0)
-            error = error / len(train)
+            training_error = training_error / len(train)
             running_corrects += torch.sum(predictions.to(DEVICE) == label_batch)
-            epoch_loss = np.round(running_loss, 3) / len(train)
 
             total_train += label_batch.size(0)
             correct_train += (predictions == label_batch).sum().item()
-            print("total_train: " , total_train , "total correct: ", correct_train)
+            print("total_train: ", total_train, "total correct: ", correct_train)
             epoch_acc = running_corrects.double() / len(train)
 
-            if epoch_acc > best_acc :
-                best_acc = epoch_acc
-                best_model_wts = copy.deepcopy(model.state_dict())
-                print("best acc: ", best_acc)
 
         print('Accuracy of training on the all the images : %d %%' % (
                 100 * correct_train / total_train))
-
 
         model.eval()
         for i, d in enumerate(test_set) :
@@ -116,33 +109,34 @@ def main() :
 
             output = model(test_image)
             loss = loss_func(output, test_label)
-            
+
             val_loss += loss
             _, predicted = torch.max(output.data, 1)
-            total += test_label.size(0)
+            total_test += test_label.size(0)
             correct += (predicted == test_label).sum().item()
-            print("correct: ", correct, " total: ", total)
+            print("correct: ", correct, " total: ", total_test)
 
         print('Accuracy of the network on the all the images test images: %d %%' % (
-                100 * correct / total))
+                100 * correct / total_test))
 
-    # torch.save(model.state_dict(), TRAINED_MODEL_PATH)
+        if training_error < best_train_error:
+            best_model = copy.deepcopy(model.state_dict())
+            best_train_error = training_error
+            counter = 0
+        else:
+            counter += 1
 
-    avg_train_loss = loss/len(train_set)
-    avg_test_loss = val_loss/len(test_set)
+            if counter >= max_wait_epoch :
+                return torch.save(best_model, TRAINED_MODEL_PATH)
 
-    if avg_test_loss < min_val_loss:
-        torch.save(model.state_dict(), TRAINED_MODEL_PATH)
-        epoch_no_improve = 0
-        min_val_loss = avg_test_loss
+    torch.save(model.state_dict(), TRAINED_MODEL_PATH)
 
-    else:
-        epoch_no_improve += 1
-        if epoch_no_improve == EPOCH:
-            print('Early stopping')
-
+    avg_train_loss = loss / len(train_set)
+    avg_test_loss = val_loss / len(test_set)
 
     print("avg train: ", avg_train_loss, "avg test: ", avg_test_loss)
+
+
 if __name__ == '__main__' :
     freeze_support()
     main()
