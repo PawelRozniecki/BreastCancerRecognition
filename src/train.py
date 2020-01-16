@@ -125,6 +125,7 @@ def main() :
             counter = 0
         else:
             counter += 1
+            print("EPOCHS WITHOUT IMPROVING: ", counter)
 
             if counter >= max_wait_epoch :
                 return torch.save(best_model, TRAINED_MODEL_PATH)
