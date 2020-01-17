@@ -43,7 +43,7 @@ def main() :
     optimizer = optim.Adam(model.parameters(), lr=0.01)
 
 
-    best_model_wts = copy.deepcopy(alexnet.state_dict())
+    best_model = copy.deepcopy(alexnet.state_dict())
     best_acc = 0.0
     epoch_no_improve = 0
 
@@ -88,7 +88,7 @@ def main() :
 
             total_train += label_batch.size(0)
             correct_train += (predictions == label_batch).sum().item()
-            print("total_train: ", total_train, "total correct: ", correct_train)
+            print("EPOCH: ", epoch, "total_train: ", total_train, "total correct: ", correct_train)
             epoch_acc = running_corrects.double() / len(train)
 
 
@@ -117,6 +117,7 @@ def main() :
         if training_error < best_train_error:
             best_model = copy.deepcopy(model.state_dict())
             best_train_error = training_error
+            print("BEST TRAIN ERROR: ", best_train_error)
             counter = 0
         else:
             counter += 1
