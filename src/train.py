@@ -48,7 +48,7 @@ def main() :
     best_model = copy.deepcopy(alexnet.state_dict())
     best_acc = 0.0
     epoch_no_improve = 0
-    best_train_error = 0.8
+    best_train_error = 1.5
     counter = 0
 
     for epoch in tqdm(range(EPOCH), desc="Number of epochs"):
@@ -79,14 +79,6 @@ def main() :
 
             loss = loss_func(predicted_labels, label_batch)
             training_error = training_error + loss.item()
-
-            if training_error < best_train_error :
-                best_model = copy.deepcopy(model.state_dict())
-                best_train_error = training_error
-                print("BEST TRAIN ERROR: ", best_train_error)
-                counter = 0
-
-            print(training_error)
             loss.backward()
 
             optimizer.step()
@@ -102,7 +94,6 @@ def main() :
 
         model.eval()
         for i, d in enumerate(tqdm(test_set, desc="testing progress")) :
-            print("iteration: ", i, "/", len(test_set))
             test_image, test_label = d
             test_image = test_image.to(DEVICE)
             test_label = test_label.to(DEVICE)
@@ -118,13 +109,21 @@ def main() :
 
         print('Accuracy of the network on the all the images test images: %d %%' % (
                 100 * correct / total_test))
+        test_loss =  val_loss/512
+        best_train_error = test_loss
 
-        counter += 1
-        print("EPOCHS WITHOUT IMPROVING: ", counter)
+        if test_loss < best_train_error :
+            best_model = copy.deepcopy(model.state_dict())
+            best_train_error = test_loss
+            print("BEST TRAIN ERROR: ", best_train_error)
+            counter = 0
+        else :
+            counter += 1
+            print("EPOCHS WITHOUT IMPROVING: ", counter)
 
-        if counter >= max_wait_epoch :
-            print("STOPPED EARLY! BEST MODEL FOUND")
-            return torch.save(best_model, TRAINED_MODEL_PATH)
+            if counter >= max_wait_epoch :
+                print("STOPPED EARLY! BEST MODEL FOUND")
+                return torch.save(best_model, TRAINED_MODEL_PATH)
 
 
     torch.save(model.state_dict(), TRAINED_MODEL_PATH)
