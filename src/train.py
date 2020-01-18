@@ -31,7 +31,7 @@ def main() :
     ])
 
     dataset = ImageFolder(DATASET_PATH, transform=dataset_transform)
-    test_len = int(len(dataset) / 3)
+    test_len = int(len(dataset) / 10)
     train_len = int(len(dataset) - test_len)
 
     train, test = data.random_split(dataset, [train_len, test_len])
@@ -67,9 +67,7 @@ def main() :
 
             optimizer.zero_grad()
 
-            # running_loss = 0.0
             running_corrects = 0
-            # print(i + 1, "/", len(train_set))
 
             image_batch, label_batch = batch
             image_batch = image_batch.to(DEVICE)
@@ -83,18 +81,26 @@ def main() :
             training_error = training_error + loss.item()
             print(training_error)
             loss.backward()
+
             optimizer.step()
-            # running_loss += loss.item() * image_batch.size(0)
-            # training_error = training_error / len(train)
-            # print(training_error)
             running_corrects += torch.sum(predictions.to(DEVICE) == label_batch)
 
             total_train += label_batch.size(0)
             correct_train += (predictions == label_batch).sum().item()
             # print("EPOCH: ", epoch, "total_train: ", total_train, "total correct: ", correct_train)
-            epoch_acc = running_corrects.double() / len(train)
 
+            if training_error < best_train_error :
+                best_model = copy.deepcopy(model.state_dict())
+                best_train_error = training_error
+                print("BEST TRAIN ERROR: ", best_train_error)
+                counter = 0
+            else :
+                counter += 1
+                print("EPOCHS WITHOUT IMPROVING: ", counter)
 
+                if counter >= max_wait_epoch :
+                    print("STOPPED EARLY! BEST MODEL FOUND")
+                    return torch.save(best_model, TRAINED_MODEL_PATH)
 
         print('Accuracy of training on the all the images : %d %%' % (
                 100 * correct_train / total_train))
@@ -118,18 +124,7 @@ def main() :
         print('Accuracy of the network on the all the images test images: %d %%' % (
                 100 * correct / total_test))
 
-        if training_error < best_train_error :
-            best_model = copy.deepcopy(model.state_dict())
-            best_train_error = training_error
-            print("BEST TRAIN ERROR: ", best_train_error)
-            counter = 0
-        else :
-            counter += 1
-            print("EPOCHS WITHOUT IMPROVING: ", counter)
 
-            if counter >= max_wait_epoch :
-                print("STOPPED EARLY! BEST MODEL FOUND")
-                return torch.save(best_model, TRAINED_MODEL_PATH)
 
     torch.save(model.state_dict(), TRAINED_MODEL_PATH)
 
