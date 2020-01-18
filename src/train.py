@@ -4,6 +4,8 @@ from multiprocessing.spawn import freeze_support
 import torch
 import torch.nn as nn
 import requests
+import tqdm as tqdm
+from tqdm import tqdm
 import torch.optim as optim
 import torchvision.models as models
 from torch.utils import data
@@ -46,8 +48,9 @@ def main() :
     best_model = copy.deepcopy(alexnet.state_dict())
     best_acc = 0.0
     epoch_no_improve = 0
+    best_train_error = 0.0
 
-    for epoch in range(EPOCH) :
+    for epoch in range(EPOCH):
         model.train()
 
         # counts number of epochs that are not improving
@@ -58,16 +61,15 @@ def main() :
         total_train = 0
         total_test = 0
         val_loss = 0.0
-        best_train_error = 0.0
         max_wait_epoch = 10
 
-        for i, batch in enumerate(train_set) :
+        for i, batch in enumerate(tqdm(train_set)):
 
             optimizer.zero_grad()
 
             running_loss = 0.0
             running_corrects = 0
-            print(i + 1, "/", len(train_set))
+            # print(i + 1, "/", len(train_set))
 
             image_batch, label_batch = batch
             image_batch = image_batch.to(DEVICE)
@@ -79,6 +81,7 @@ def main() :
 
             loss = loss_func(predicted_labels, label_batch)
             training_error = training_error + loss.item()
+            best_train_error = training_error
 
             loss.backward()
             optimizer.step()
@@ -88,7 +91,7 @@ def main() :
 
             total_train += label_batch.size(0)
             correct_train += (predictions == label_batch).sum().item()
-            print("EPOCH: ", epoch, "total_train: ", total_train, "total correct: ", correct_train)
+            # print("EPOCH: ", epoch, "total_train: ", total_train, "total correct: ", correct_train)
             epoch_acc = running_corrects.double() / len(train)
 
 
