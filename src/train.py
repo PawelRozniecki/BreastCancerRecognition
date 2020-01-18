@@ -31,7 +31,7 @@ def main() :
     ])
 
     dataset = ImageFolder(DATASET_PATH, transform=dataset_transform)
-    test_len = int(len(dataset) / 10)
+    test_len = int(len(dataset) / 3)
     train_len = int(len(dataset) - test_len)
 
     train, test = data.random_split(dataset, [train_len, test_len])
@@ -48,7 +48,7 @@ def main() :
     best_model = copy.deepcopy(alexnet.state_dict())
     best_acc = 0.0
     epoch_no_improve = 0
-    best_train_error = 0
+    best_train_error = 0.8
     counter = 0
 
     for epoch in tqdm(range(EPOCH), desc="Number of epochs"):
@@ -79,6 +79,13 @@ def main() :
 
             loss = loss_func(predicted_labels, label_batch)
             training_error = training_error + loss.item()
+
+            if training_error < best_train_error :
+                best_model = copy.deepcopy(model.state_dict())
+                best_train_error = training_error
+                print("BEST TRAIN ERROR: ", best_train_error)
+                counter = 0
+
             print(training_error)
             loss.backward()
 
@@ -112,18 +119,13 @@ def main() :
         print('Accuracy of the network on the all the images test images: %d %%' % (
                 100 * correct / total_test))
 
-        if training_error < best_train_error :
-            best_model = copy.deepcopy(model.state_dict())
-            best_train_error = training_error
-            print("BEST TRAIN ERROR: ", best_train_error)
-            counter = 0
-        else :
-            counter += 1
-            print("EPOCHS WITHOUT IMPROVING: ", counter)
+        counter += 1
+        print("EPOCHS WITHOUT IMPROVING: ", counter)
 
-            if counter >= max_wait_epoch :
-                print("STOPPED EARLY! BEST MODEL FOUND")
-                return torch.save(best_model, TRAINED_MODEL_PATH)
+        if counter >= max_wait_epoch :
+            print("STOPPED EARLY! BEST MODEL FOUND")
+            return torch.save(best_model, TRAINED_MODEL_PATH)
+
 
     torch.save(model.state_dict(), TRAINED_MODEL_PATH)
 
