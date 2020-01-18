@@ -42,15 +42,15 @@ def main() :
         p.requires_grad = False
 
     loss_func = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.01)
+    optimizer = optim.Adam(model.parameters(), lr=0.0001)
 
 
     best_model = copy.deepcopy(alexnet.state_dict())
     best_acc = 0.0
     epoch_no_improve = 0
-    best_train_error = 0.0
+    best_train_error = 1.0
 
-    for epoch in range(EPOCH):
+    for epoch in tqdm(range(EPOCH), desc="Number of epochs"):
         model.train()
 
         # counts number of epochs that are not improving
@@ -61,9 +61,9 @@ def main() :
         total_train = 0
         total_test = 0
         val_loss = 0.0
-        max_wait_epoch = 10
+        max_wait_epoch = 5
 
-        for i, batch in enumerate(tqdm(train_set)):
+        for i, batch in enumerate(tqdm(train_set, desc="training progress")):
 
             optimizer.zero_grad()
 
@@ -81,7 +81,6 @@ def main() :
 
             loss = loss_func(predicted_labels, label_batch)
             training_error = training_error + loss.item()
-            best_train_error = training_error
 
             loss.backward()
             optimizer.step()
@@ -94,12 +93,24 @@ def main() :
             # print("EPOCH: ", epoch, "total_train: ", total_train, "total correct: ", correct_train)
             epoch_acc = running_corrects.double() / len(train)
 
+            if training_error < best_train_error :
+                best_model = copy.deepcopy(model.state_dict())
+                best_train_error = training_error
+                print("BEST TRAIN ERROR: ", best_train_error)
+                counter = 0
+            else :
+                counter += 1
+                print("EPOCHS WITHOUT IMPROVING: ", counter)
+
+                if counter >= max_wait_epoch :
+                    print("STOPPED EARLY! BEST MODEL FOUND")
+                    return torch.save(best_model, TRAINED_MODEL_PATH)
 
         print('Accuracy of training on the all the images : %d %%' % (
                 100 * correct_train / total_train))
 
         model.eval()
-        for i, d in enumerate(test_set) :
+        for i, d in enumerate(tqdm(test_set, desc="testing progress")) :
             print("iteration: ", i, "/", len(test_set))
             test_image, test_label = d
             test_image = test_image.to(DEVICE)
@@ -117,17 +128,7 @@ def main() :
         print('Accuracy of the network on the all the images test images: %d %%' % (
                 100 * correct / total_test))
 
-        if training_error < best_train_error:
-            best_model = copy.deepcopy(model.state_dict())
-            best_train_error = training_error
-            print("BEST TRAIN ERROR: ", best_train_error)
-            counter = 0
-        else:
-            counter += 1
-            print("EPOCHS WITHOUT IMPROVING: ", counter)
 
-            if counter >= max_wait_epoch :
-                return torch.save(best_model, TRAINED_MODEL_PATH)
 
     torch.save(model.state_dict(), TRAINED_MODEL_PATH)
 
