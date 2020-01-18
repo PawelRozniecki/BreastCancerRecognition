@@ -48,7 +48,7 @@ def main() :
     best_model = copy.deepcopy(alexnet.state_dict())
     best_acc = 0.0
     epoch_no_improve = 0
-    best_train_error = 1.0
+    best_train_error = 0
     counter = 0
 
     for epoch in tqdm(range(EPOCH), desc="Number of epochs"):
@@ -89,18 +89,6 @@ def main() :
             correct_train += (predictions == label_batch).sum().item()
             # print("EPOCH: ", epoch, "total_train: ", total_train, "total correct: ", correct_train)
 
-            if training_error < best_train_error :
-                best_model = copy.deepcopy(model.state_dict())
-                best_train_error = training_error
-                print("BEST TRAIN ERROR: ", best_train_error)
-                counter = 0
-            else :
-                counter += 1
-                print("EPOCHS WITHOUT IMPROVING: ", counter)
-
-                if counter >= max_wait_epoch :
-                    print("STOPPED EARLY! BEST MODEL FOUND")
-                    return torch.save(best_model, TRAINED_MODEL_PATH)
 
         print('Accuracy of training on the all the images : %d %%' % (
                 100 * correct_train / total_train))
@@ -124,7 +112,18 @@ def main() :
         print('Accuracy of the network on the all the images test images: %d %%' % (
                 100 * correct / total_test))
 
+        if training_error < best_train_error :
+            best_model = copy.deepcopy(model.state_dict())
+            best_train_error = training_error
+            print("BEST TRAIN ERROR: ", best_train_error)
+            counter = 0
+        else :
+            counter += 1
+            print("EPOCHS WITHOUT IMPROVING: ", counter)
 
+            if counter >= max_wait_epoch :
+                print("STOPPED EARLY! BEST MODEL FOUND")
+                return torch.save(best_model, TRAINED_MODEL_PATH)
 
     torch.save(model.state_dict(), TRAINED_MODEL_PATH)
 
