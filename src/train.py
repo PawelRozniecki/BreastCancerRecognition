@@ -49,12 +49,12 @@ def main() :
     best_acc = 0.0
     epoch_no_improve = 0
     best_train_error = 1.0
+    counter = 0
 
     for epoch in tqdm(range(EPOCH), desc="Number of epochs"):
         model.train()
 
         # counts number of epochs that are not improving
-        counter = 0
         training_error = 0.0
         correct = 0
         correct_train = 0
@@ -67,7 +67,7 @@ def main() :
 
             optimizer.zero_grad()
 
-            running_loss = 0.0
+            # running_loss = 0.0
             running_corrects = 0
             # print(i + 1, "/", len(train_set))
 
@@ -81,11 +81,12 @@ def main() :
 
             loss = loss_func(predicted_labels, label_batch)
             training_error = training_error + loss.item()
-
+            print(training_error)
             loss.backward()
             optimizer.step()
-            running_loss += loss.item() * image_batch.size(0)
-            training_error = training_error / len(train)
+            # running_loss += loss.item() * image_batch.size(0)
+            # training_error = training_error / len(train)
+            # print(training_error)
             running_corrects += torch.sum(predictions.to(DEVICE) == label_batch)
 
             total_train += label_batch.size(0)
@@ -108,11 +109,11 @@ def main() :
             output = model(test_image)
             loss = loss_func(output, test_label)
 
-            val_loss += loss
+            val_loss += loss.item()
             _, predicted = torch.max(output.data, 1)
             total_test += test_label.size(0)
             correct += (predicted == test_label).sum().item()
-            print("correct: ", correct, " total: ", total_test)
+            #print("correct: ", correct, " total: ", total_test)
 
         print('Accuracy of the network on the all the images test images: %d %%' % (
                 100 * correct / total_test))
