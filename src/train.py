@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import copy
 from multiprocessing.spawn import freeze_support
 import torch
@@ -14,7 +13,7 @@ from torchvision.transforms import transforms
 from src.constants import *
 import numpy as np
 from src.model import Model
-
+from src.constants import *
 
 def main() :
     alexnet = models.alexnet(pretrained=True)
@@ -22,10 +21,9 @@ def main() :
     model.to(DEVICE)
 
     dataset_transform = transforms.Compose([
-        transforms.Resize(254),
-        transforms.RandomResizedCrop(224),
+        transforms.Resize((128, 128)),
         transforms.RandomHorizontalFlip(),
-        transforms.RandomRotation(0, 270),
+        transforms.RandomRotation(10),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
     ])
@@ -42,7 +40,8 @@ def main() :
         p.requires_grad = False
 
     loss_func = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.0001)
+
+    optimizer = optim.Adam(model.parameters(), lr=0.001)
 
 
     best_model = copy.deepcopy(alexnet.state_dict())
@@ -51,7 +50,7 @@ def main() :
     best_train_error = 1.5
     counter = 0
 
-    for epoch in tqdm(range(EPOCH), desc="Number of epochs"):
+    for epoch in tqdm(range(EPOCH),desc="epochs"):
         model.train()
 
         # counts number of epochs that are not improving
@@ -61,9 +60,9 @@ def main() :
         total_train = 0
         total_test = 0
         val_loss = 0.0
-        max_wait_epoch = 5
+        max_wait_epoch = 10
 
-        for i, batch in enumerate(tqdm(train_set, desc="training progress")):
+        for i, batch in enumerate(tqdm(train_set,desc="training progress")):
 
             optimizer.zero_grad()
 
@@ -78,7 +77,10 @@ def main() :
             _, predictions = torch.max(predicted_labels, 1)
 
             loss = loss_func(predicted_labels, label_batch)
-            training_error = training_error + loss.item()
+            training_error =  loss.item()
+
+
+           # training_error = training_error + loss.item()
             loss.backward()
 
             optimizer.step()
@@ -94,6 +96,7 @@ def main() :
 
         model.eval()
         for i, d in enumerate(tqdm(test_set, desc="testing progress")) :
+           #	 print("iteration: ", i, "/", len(test_set))
             test_image, test_label = d
             test_image = test_image.to(DEVICE)
             test_label = test_label.to(DEVICE)
@@ -110,7 +113,7 @@ def main() :
         print('Accuracy of the network on the all the images test images: %d %%' % (
                 100 * correct / total_test))
         test_loss =  val_loss/512
-        best_train_error = test_loss
+        print(test_loss)
 
         if test_loss < best_train_error :
             best_model = copy.deepcopy(model.state_dict())
@@ -126,7 +129,7 @@ def main() :
                 return torch.save(best_model, TRAINED_MODEL_PATH)
 
 
-    torch.save(model.state_dict(), TRAINED_MODEL_PATH)
+    torch.save(best_model, TRAINED_MODEL_PATH)
 
     avg_train_loss = loss / len(train_set)
     avg_test_loss = val_loss / len(test_set)

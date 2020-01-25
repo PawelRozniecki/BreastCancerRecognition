@@ -13,8 +13,9 @@ def main():
 
     alexnet = models.alexnet(pretrained=True)
     model = Model(alexnet,2)
-    model.load_state_dict(torch.load(TRAINED_MODEL_PATH,map_location="cpu"))
+    model.load_state_dict(torch.load(TRAINED_MODEL_PATH))
     model.eval()
+
 
     transform = transforms.Compose([
         transforms.Resize(254),
@@ -22,12 +23,11 @@ def main():
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])])
+    # input_image = Image.open("/Users/pingwin/Documents/GitHub/BreastCancer/BreastCancerRecognition/m.jpg")
+    input_image = Image.open('..' + os.path.sep + 'dataset' + os.path.sep + '1' + os.path.sep + '/8959_idx5_x1301_y1251_class1.png')
 
-    input_image = Image.open("/Users/pingwin/Documents/GitHub/BreastCancer/BreastCancerRecognition/m.jpg")
-    # input_image = Image.open('..' + os.path.sep + 'dataset' + os.path.sep + '1' + os.path.sep + '/8959_idx5_x1301_y1251_class1.png')
     image_transform = transform(input_image)
 
-    
     batch = torch.unsqueeze(image_transform, 0).to(DEVICE)
     out = model(batch)
 
@@ -52,3 +52,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
