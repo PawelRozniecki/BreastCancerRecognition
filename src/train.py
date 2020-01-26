@@ -10,18 +10,17 @@ import torchvision.models as models
 from torch.utils import data
 from torchvision.datasets import ImageFolder
 from torchvision.transforms import transforms
-from src.constants import *
 import numpy as np
-from src.model import Model
-from src.constants import *
-
+from model import Model
+from constants import *
 def main() :
     alexnet = models.alexnet(pretrained=True)
     model = Model(alexnet, 2)
     model.to(DEVICE)
-
+  
+    print(torch.cuda.device_count()) 
     dataset_transform = transforms.Compose([
-        transforms.Resize((128, 128)),
+        transforms.Resize((128,128)),
         transforms.RandomHorizontalFlip(),
         transforms.RandomRotation(10),
         transforms.ToTensor(),
@@ -41,7 +40,7 @@ def main() :
 
     loss_func = nn.CrossEntropyLoss()
 
-    optimizer = optim.Adam(model.parameters(), lr=0.001)
+    optimizer = optim.Adam(model.parameters(), lr=0.0001)
 
 
     best_model = copy.deepcopy(alexnet.state_dict())
