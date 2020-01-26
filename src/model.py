@@ -27,13 +27,13 @@ class Model(nn.Module):
         )
 
         self.classifier = nn.Sequential(
-            nn.Dropout(p=0.5),
-            nn.Linear(256 * 6 * 6, 4096),
+            nn.Dropout(p=0.2),
+            nn.Linear(256 * 3* 3, 4096),
             nn.LeakyReLU(inplace=True),
-            nn.Dropout(p = 0.5),
+            nn.Dropout(p = 0.2),
             nn.Linear(4096, 4096),
             nn.LeakyReLU(inplace=True),
-            nn.Dropout(p = 0.5 ),
+            nn.Dropout(p = 0.2),
             nn.Linear(4096, 4096),
             nn.LeakyReLU(inplace=True),
             nn.Linear(4096, num_classes)
@@ -49,6 +49,6 @@ class Model(nn.Module):
 
     def forward(self, x):
         x = self.features(x)
-        x = x.view(x.size(0), 256 * 6 * 6)
+        x = x.view(x.size(0), 256 *3  * 3)
         x = self.classifier(x)
         return x

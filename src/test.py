@@ -6,25 +6,33 @@ from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageFont
 from torchvision.transforms import transforms
-from src.constants import *
-from src.model import Model
+from constants import *
+from model import Model
 
 def main():
 
     alexnet = models.alexnet(pretrained=True)
     model = Model(alexnet,2)
-    model.load_state_dict(torch.load(TRAINED_MODEL_PATH))
+    model.to(DEVICE)
+	
+    model.load_state_dict(torch.load(TRAINED_MODEL_PATH,map_location= "cuda:0"))
+
     model.eval()
 
 
     transform = transforms.Compose([
-        transforms.Resize(254),
-        transforms.RandomResizedCrop(224),
+        transforms.Resize((128,128)),
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])])
-    # input_image = Image.open("/Users/pingwin/Documents/GitHub/BreastCancer/BreastCancerRecognition/m.jpg")
-    input_image = Image.open('..' + os.path.sep + 'dataset' + os.path.sep + '1' + os.path.sep + '/8959_idx5_x1301_y1251_class1.png')
+
+
+    # input_image = Image.open("/home/Anyi/ATAI/BreastCancerRecognition/dataset/dataset/0/8863_idx5_x151_y1401_class0.png")
+     input_image = Image.open("/home/Anyi/ATAI/BreastCancerRecognition/dataset/dataset/0/8863_idx5_x201_y401_class0.png")
+    #input_image = Image.open("/home/Anyi/ATAI/BreastCancerRecognition/dataset/dataset/1/8959_idx5_x1101_y351_class1.png")
+#    input_image = Image.open("/home/Anyi/ATAI/BreastCancerRecognition/dataset/dataset/1/8959_idx5_x1151_y251_class1.png")
+
+
 
     image_transform = transform(input_image)
 
@@ -44,10 +52,6 @@ def main():
     [(classes[idx], percentage[idx].item()) for idx in indices[0][:]]
     y = classes[index[0]], percentage[index[0]].item()
 
-    draw = ImageDraw.Draw(input_image)
-    font = ImageFont.truetype('arial.ttf', 24)
-    draw.text((0, 0), str(y), (0, 0, 0), font=font)
-    input_image.save('../recognition.jpg')
 
 
 if __name__ == '__main__':
