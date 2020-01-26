@@ -11,13 +11,17 @@ from torch.utils import data
 from torchvision.datasets import ImageFolder
 from torchvision.transforms import transforms
 import numpy as np
-from model import Model
-from constants import *
+import matplotlib.pyplot as plt
+from src.model import Model
+from src.constants import *
 def main() :
+
     alexnet = models.alexnet(pretrained=True)
     model = Model(alexnet, 2)
     model.to(DEVICE)
-  
+
+    epoch_arr = np.arange(EPOCH)
+    points_arr = np.empty(0)
     print(torch.cuda.device_count()) 
     dataset_transform = transforms.Compose([
         transforms.Resize((128,128)),
@@ -113,6 +117,7 @@ def main() :
                 100 * correct / total_test))
         test_loss =  val_loss/512
         print(test_loss)
+        points_arr = np.append(points_arr, test_loss)
 
         if test_loss < best_train_error :
             best_model = copy.deepcopy(model.state_dict())
@@ -132,6 +137,10 @@ def main() :
 
     avg_train_loss = loss / len(train_set)
     avg_test_loss = val_loss / len(test_set)
+
+    plt.plot(epoch_arr,points_arr)
+    plt.show()
+    plt.savefig("experiment1.png")
 
     print("avg train: ", avg_train_loss, "avg test: ", avg_test_loss)
 
